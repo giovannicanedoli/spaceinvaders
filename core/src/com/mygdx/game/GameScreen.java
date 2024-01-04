@@ -17,8 +17,10 @@ public class GameScreen implements Screen {
 
     OrthographicCamera camera;
 
-    private int WIDTH = 800;
-    private int HEIGHT = 480;
+    private final int WIDTH = 1920;
+    private final int HEIGHT = 1080;
+
+    private final int SPEED = 400;
     public GameScreen(final MainGame game) {
         this.game = game;
         spaceImage = new Texture(Gdx.files.internal("ship.png"));
@@ -30,6 +32,7 @@ public class GameScreen implements Screen {
         spaceShip.x = 800/2 - 64/2;
         spaceShip.y = 20;
 
+        //perché non è centrato??
         spaceShip.width = 64;
         spaceShip.height = 64;
     }
@@ -54,29 +57,29 @@ public class GameScreen implements Screen {
 
         if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                spaceShip.x -= 600 * Gdx.graphics.getDeltaTime();
+                spaceShip.x -= 2*SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                spaceShip.x += 600 * Gdx.graphics.getDeltaTime();
+                spaceShip.x += 2*SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.UP)){
-                spaceShip.y += 600 * Gdx.graphics.getDeltaTime();
+                spaceShip.y += 2*SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                spaceShip.y -= 600 * Gdx.graphics.getDeltaTime();
+                spaceShip.y -= 2*SPEED * Gdx.graphics.getDeltaTime();
             }
         }else{
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT)){
-                spaceShip.x -= 200 * Gdx.graphics.getDeltaTime();
+                spaceShip.x -= SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.RIGHT)){
-                spaceShip.x += 200 * Gdx.graphics.getDeltaTime();
+                spaceShip.x += SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.UP)){
-                spaceShip.y += 200 * Gdx.graphics.getDeltaTime();
+                spaceShip.y += SPEED * Gdx.graphics.getDeltaTime();
             }
             if(Gdx.input.isKeyPressed(Input.Keys.DOWN)){
-                spaceShip.y -= 200 * Gdx.graphics.getDeltaTime();
+                spaceShip.y -= SPEED * Gdx.graphics.getDeltaTime();
             }
         }
 
