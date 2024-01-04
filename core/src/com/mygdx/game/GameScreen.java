@@ -25,7 +25,7 @@ public class GameScreen implements Screen {
     private final int WIDTH = 1920;
     private final int HEIGHT = 1080;
 
-    private final int SPEED = 400;
+    private final int SPEED = 800;
 
     //private int nenemy = 0;
 
@@ -46,15 +46,22 @@ public class GameScreen implements Screen {
         spaceShip.x = WIDTH/2 - 10;
         spaceShip.y = 20;
 
-        enemy.x = (int)(Math.random() * (WIDTH - 20 + 1)) + 10;
-        enemy.y = (int)(Math.random() * (HEIGHT - 20 - 500 + 1)) + 500;
+        enemy.x = (int)(Math.random() * (WIDTH - 20 + 1)) + 10;             //bug here ---where to spawn correctly?
+        enemy.y = (int)(Math.random() * (HEIGHT - 20 - 500 + 1)) + 500;     //bug here
 
-        laser.x = spaceShip.x + 10;
-        laser.y = spaceShip.y;
+        laser.x = spaceShip.x;
+        laser.y = spaceShip.y + 100;
 
         //perché non è centrato??
         spaceShip.width = 20;
         spaceShip.height = 20;
+
+        enemy.width = 20;
+        enemy.height = 20;
+
+        laser.width = 10;
+        laser.height = 20;
+
     }
 
     @Override
@@ -67,8 +74,7 @@ public class GameScreen implements Screen {
         ScreenUtils.clear(0,0,0.2f,1);
 
         camera.update();
-        System.out.println(spaceShip.x);
-        System.out.println(spaceShip.y);
+        //System.out.println(spaceShip.x + " " + spaceShip.y);
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
@@ -79,6 +85,11 @@ public class GameScreen implements Screen {
 
         game.batch.draw(enemyImage, enemy.x, enemy.y);
 
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
+            System.out.println("Drawn");
+            game.batch.draw(laserImage, laser.x, laser.y);  //it'll have to carry on it's walk alone, just how??
+        }
+        laser.y += 200 * Gdx.graphics.getDeltaTime();; //temp value, how to update y in a more "fancy" way?
 
         game.batch.end();
 
@@ -110,10 +121,12 @@ public class GameScreen implements Screen {
             }
         }
 
+
+        //bounds stuff
         if(spaceShip.x < 0) spaceShip.x = 0;
         if(spaceShip.y < 0) spaceShip.y = 0;
-        if(spaceShip.x > WIDTH - spaceShip.width) spaceShip.x = 0;
-        if(spaceShip.y > HEIGHT - spaceShip.height ) spaceShip.y = 0;
+        if(spaceShip.x >= WIDTH + spaceShip.width) spaceShip.x = WIDTH-100;         //glitch here -----bounds glitchy
+        if(spaceShip.y >= HEIGHT - spaceShip.height) spaceShip.y = HEIGHT-100;      //glitch here
 
     }
 
