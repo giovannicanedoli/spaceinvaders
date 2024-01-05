@@ -28,7 +28,9 @@ public class GameScreen implements Screen {
     private final int SPEED = 800;
 
     //private int nenemy = 0;
-
+    boolean active = false;
+    float laserx;
+    float lasery;
     public GameScreen(final MainGame game) {
         this.game = game;
         spaceImage = new Texture(Gdx.files.internal("ship.png"));
@@ -61,7 +63,8 @@ public class GameScreen implements Screen {
 
         laser.width = 10;
         laser.height = 20;
-
+        laserx = spaceShip.getX();
+        lasery = spaceShip.getY();
     }
 
     @Override
@@ -71,28 +74,47 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        game.batch.begin();
         ScreenUtils.clear(0,0,0.2f,1);
 
         camera.update();
         //System.out.println(spaceShip.x + " " + spaceShip.y);
+
         game.batch.setProjectionMatrix(camera.combined);
 
-        game.batch.begin();
+
         game.batch.draw(spaceImage, spaceShip.x, spaceShip.y);
-        //if(nenemy != 5){
-            //random x and y
-        game.batch.draw(enemyImage, enemy.x, enemy.y);
 
         game.batch.draw(enemyImage, enemy.x, enemy.y);
 
-        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
-            System.out.println("Drawn");
-            game.batch.draw(laserImage, laser.x, laser.y);  //it'll have to carry on it's walk alone, just how??
+        game.batch.draw(enemyImage, enemy.x, enemy.y);
+
+
+        //bullet logic
+        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+            active = true;
+            laserx = spaceShip.getX();
+            lasery = spaceShip.getY();
         }
-        laser.y += 200 * Gdx.graphics.getDeltaTime();; //temp value, how to update y in a more "fancy" way?
 
-        game.batch.end();
+        if(active){
+            game.batch.draw(laserImage, laserx, lasery);
+            lasery += SPEED * Gdx.graphics.getDeltaTime();; //temp value, how to update y in a more "fancy" way?
+        }
 
+
+        //collision detection
+        if(laser.getY() > HEIGHT){
+            active = false;
+        }
+
+        if(laser.overlaps(enemy)){
+            System.out.println("collision problem here");
+            active = false;
+        }
+
+
+        //movement
         if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
             if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)){
                 spaceShip.x -= 2*SPEED * Gdx.graphics.getDeltaTime();
@@ -121,13 +143,14 @@ public class GameScreen implements Screen {
             }
         }
 
-
-        //bounds stuff
+        //bounds settings
         if(spaceShip.x < 0) spaceShip.x = 0;
         if(spaceShip.y < 0) spaceShip.y = 0;
-        if(spaceShip.x >= WIDTH + spaceShip.width) spaceShip.x = WIDTH-100;         //glitch here -----bounds glitchy
+        if(spaceShip.x >= WIDTH + spaceShip.width) spaceShip.x = WIDTH-100;         //glitch here -----bounds are a bit glitchy
         if(spaceShip.y >= HEIGHT - spaceShip.height) spaceShip.y = HEIGHT-100;      //glitch here
 
+
+        game.batch.end();   //is it worth to keep having the batch open for the whole rendering process? Probably no
     }
 
     @Override
