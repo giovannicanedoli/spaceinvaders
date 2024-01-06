@@ -27,7 +27,6 @@ public class StartMenuScreen implements Screen {
         game.batch.setProjectionMatrix(camera.combined);
 
         game.batch.begin();
-        game.font.draw(game.batch, "BENVENUTA!", 100, 150);
         game.font.draw(game.batch, "CLICCA IL MUOSE PER GIOCARE! TI MUOVI CON WASD!", 100, 100);
         game.batch.end();
 
