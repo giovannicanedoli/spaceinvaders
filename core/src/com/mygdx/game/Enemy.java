@@ -34,4 +34,9 @@ public class Enemy {
     public Rectangle getEnemy() {
         return enemy;
     }
+
+    public void setEnemyTexture(Texture enemyTexture) {
+        this.enemyTexture = enemyTexture;
+    }
+
 }

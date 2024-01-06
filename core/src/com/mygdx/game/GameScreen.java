@@ -9,13 +9,14 @@ import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.ScreenUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class GameScreen implements Screen {
     final MainGame game;
     private final Texture spaceImage;
     private final Rectangle spaceShip;
 
-    private int spawned = 10;
+    private final int spawned = 10;
 
     OrthographicCamera camera;
 
@@ -64,67 +65,54 @@ public class GameScreen implements Screen {
     public void render(float delta) {
         game.batch.begin();
         ScreenUtils.clear(0,0,0.2f,1);
-
         camera.update();
-        //System.out.println(spaceShip.x + " " + spaceShip.y);
-
         game.batch.setProjectionMatrix(camera.combined);
-
-
         game.batch.draw(spaceImage, spaceShip.x, spaceShip.y);
 
-        Enemy enemy = new Enemy();
-        enemy.update(game.batch);
+        if(enemies.size() < spawned){
+            while(enemies.size() != 10){
+                enemies.add(new Enemy());
+            }
+        }
+
+        for(Enemy en: enemies){
+            en.update(game.batch);
+        }
 
         //bullet logic
-        if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
+        if(Gdx.input.isKeyPressed(Input.Keys.SPACE)){
             Laser l = new Laser(spaceShip.x, spaceShip.y);
             lasers.add(l);
         }
 
-
-        //molto buggato, però sembra funzionare
-        for(Laser l: lasers){
-            l.update(game.batch);
-            if(l.getLaser().overlaps(enemy.getEnemy())){
-                l.setActive(false);
-                l.setLaserImage(null);
-            }
-        }
-
-
         //collision detection
+        Iterator<Laser> laserIterator = lasers.iterator();
+        while(laserIterator.hasNext()){
+            Laser l = laserIterator.next();
+            l.update(game.batch);
+            Iterator<Enemy> enemyIterator = enemies.iterator();
+            while(enemyIterator.hasNext()) {
+                Enemy en = enemyIterator.next();
+                if(l.getLaser().overlaps(en.getEnemy())) {
 
+                    l.setActive(false);
+                    l.setLaserImage(null);
+                    en.setEnemyTexture(null);
 
-
-        //movement
-        if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
-            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)){
-                spaceShip.x -= 2*SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)){
-                spaceShip.x += 2*SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)){
-                spaceShip.y += 2*SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)){
-                spaceShip.y -= 2*SPEED * Gdx.graphics.getDeltaTime();
-            }
-        }else{
-            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)){
-                spaceShip.x -= SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)){
-                spaceShip.x += SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)){
-                spaceShip.y += SPEED * Gdx.graphics.getDeltaTime();
-            }
-            if(Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)){
-                spaceShip.y -= SPEED * Gdx.graphics.getDeltaTime();
+                    enemyIterator.remove();
+                    laserIterator.remove(); //memory management
+                }
             }
         }
+
+        //GRANDE PROBLEMA DI EFFICIENZA!
+        // vengono rimossi dalla lista solo i colpi che collidono con i mostri non quelli che raggiungono i limiti
+
+        movement();
+
+        /*if(Gdx.input.isKeyPressed(Input.Keys.ESCAPE)){
+            game.setScreen(new PauseScreen(game));
+        }*/
 
         //bounds settings
         if(spaceShip.x < 0) spaceShip.x = 0;
@@ -159,6 +147,36 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         spaceImage.dispose();
+    }
+
+    public void movement(){
+        if(Gdx.input.isKeyPressed(Input.Keys.CONTROL_LEFT)){
+            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)){
+                spaceShip.x -= 2*SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)){
+                spaceShip.x += 2*SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)){
+                spaceShip.y += 2*SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)){
+                spaceShip.y -= 2*SPEED * Gdx.graphics.getDeltaTime();
+            }
+        }else{
+            if(Gdx.input.isKeyPressed(Input.Keys.LEFT) || Gdx.input.isKeyPressed(Input.Keys.A)){
+                spaceShip.x -= SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.RIGHT) || Gdx.input.isKeyPressed(Input.Keys.D)){
+                spaceShip.x += SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.UP) || Gdx.input.isKeyPressed(Input.Keys.W)){
+                spaceShip.y += SPEED * Gdx.graphics.getDeltaTime();
+            }
+            if(Gdx.input.isKeyPressed(Input.Keys.DOWN) || Gdx.input.isKeyPressed(Input.Keys.S)){
+                spaceShip.y -= SPEED * Gdx.graphics.getDeltaTime();
+            }
+        }
     }
 
     public static int getWIDTH() {
