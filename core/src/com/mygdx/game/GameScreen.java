@@ -6,65 +6,53 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.LongMap;
 import com.badlogic.gdx.utils.ScreenUtils;
+
+import java.util.ArrayList;
 
 public class GameScreen implements Screen {
     final MainGame game;
-    private Texture spaceImage;
-    private Texture enemyImage;
-    private Texture laserImage;
+    private final Texture spaceImage;
+    private final Rectangle spaceShip;
 
-    private Rectangle spaceShip;
-    private Rectangle enemy;
-    private Rectangle laser;
+    private int spawned = 10;
 
     OrthographicCamera camera;
 
-    private final int WIDTH = 1920;
-    private final int HEIGHT = 1080;
+    private static final int WIDTH = 1920;
+    private static final int HEIGHT = 1080;
 
-    private final int SPEED = 800;
+    final int SPEED = 800;
 
-    //private int nenemy = 0;
-    boolean active = false;
-    float laserx;
-    float lasery;
+    private final ArrayList<Laser> lasers;
+
+    private final ArrayList<Enemy> enemies;
+
     public GameScreen(final MainGame game) {
         this.game = game;
         spaceImage = new Texture(Gdx.files.internal("ship.png"));
-        laserImage = new Texture(Gdx.files.internal("pixel_laser_red.png"));
-        enemyImage = new Texture(Gdx.files.internal("pixel_ship_red_small.png"));
+
 
         spaceShip = new Rectangle();
-        enemy = new Rectangle();
-        laser = new Rectangle();
 
         camera = new OrthographicCamera();
         camera.setToOrtho(false, WIDTH, HEIGHT);
 
         //asset non si centra correttamente, che fare?
-        spaceShip.x = WIDTH/2 - 10;
+        spaceShip.x = (float) WIDTH/2 - 10;
         spaceShip.y = 20;
 
-        enemy.x = (int)(Math.random() * (WIDTH - 20 + 1)) + 10;             //bug here ---where to spawn correctly?
-        enemy.y = (int)(Math.random() * (HEIGHT - 20 - 500 + 1)) + 500;     //bug here
 
-        laser.x = spaceShip.x;
-        laser.y = spaceShip.y + 100;
 
         //perché non è centrato??
         spaceShip.width = 20;
         spaceShip.height = 20;
 
-        enemy.width = 20;
-        enemy.height = 20;
-
-        laser.width = 10;
-        laser.height = 20;
-        laserx = spaceShip.getX();
-        lasery = spaceShip.getY();
+        lasers = new ArrayList<>();
+        enemies = new ArrayList<>();
+        for(int i = 0; i < spawned; i++){
+            enemies.add(new Enemy());
+        }
     }
 
     @Override
@@ -85,33 +73,28 @@ public class GameScreen implements Screen {
 
         game.batch.draw(spaceImage, spaceShip.x, spaceShip.y);
 
-        game.batch.draw(enemyImage, enemy.x, enemy.y);
-
-        game.batch.draw(enemyImage, enemy.x, enemy.y);
-
+        Enemy enemy = new Enemy();
+        enemy.update(game.batch);
 
         //bullet logic
         if(Gdx.input.isKeyJustPressed(Input.Keys.SPACE)){
-            active = true;
-            laserx = spaceShip.getX();
-            lasery = spaceShip.getY();
+            Laser l = new Laser(spaceShip.x, spaceShip.y);
+            lasers.add(l);
         }
 
-        if(active){
-            game.batch.draw(laserImage, laserx, lasery);
-            lasery += SPEED * Gdx.graphics.getDeltaTime();; //temp value, how to update y in a more "fancy" way?
+
+        //molto buggato, però sembra funzionare
+        for(Laser l: lasers){
+            l.update(game.batch);
+            if(l.getLaser().overlaps(enemy.getEnemy())){
+                l.setActive(false);
+                l.setLaserImage(null);
+            }
         }
 
 
         //collision detection
-        if(laser.getY() > HEIGHT){
-            active = false;
-        }
 
-        if(laser.overlaps(enemy)){
-            System.out.println("collision problem here");
-            active = false;
-        }
 
 
         //movement
@@ -176,7 +159,13 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         spaceImage.dispose();
-        enemyImage.dispose();
-        laserImage.dispose();
+    }
+
+    public static int getWIDTH() {
+        return WIDTH;
+    }
+
+    public static int getHEIGHT() {
+        return HEIGHT;
     }
 }
